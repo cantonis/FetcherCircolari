@@ -8,7 +8,7 @@ const fetch = require("node-fetch");
 class Circolare {
     constructor(titolo, link) {
         this.titolo = titolo;
-        this.link = link;
+        this.link = 'https://www.alessandrinimainardi.edu.it' + link;
     }
     log() {
         console.log("Titolo: " + this.titolo + "\nLink: " + this.link);
