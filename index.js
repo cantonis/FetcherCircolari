@@ -45,7 +45,7 @@ async function getCircolare() {
     let link = header.href;
     let dataPubblicazione = divBlocco.children[2].children[1].textContent;
     let destinatari = divBlocco.children[3].children[0].children[0].textContent
-        .replace(/\nA/g, ", a");
+        .replace(/\n/g, ", ").replace(/ A/g, " a");
 
     return new Circolare(titolo, link, dataPubblicazione, destinatari);
 }
