@@ -6,12 +6,22 @@ const fetch = require("node-fetch");
  * Classe che rappresenta una circolare
  */
 class Circolare {
-    constructor(titolo, link) {
+    /**
+     * 
+     * @param {string} titolo  Il titolo della circolare
+     * @param {string} link Il link che porta alla circolare
+     * @param {string} dataPubblicazione La data di pubblicazione della circolare
+     * @param {string} destinatari I destinatari della circolare
+     */
+    constructor(titolo, link, dataPubblicazione, destinatari) {
         this.titolo = titolo;
-        this.link = 'https://www.alessandrinimainardi.edu.it' + link;
+        this.link = link;
+        this.data = dataPubblicazione;
+        this.destinatari = destinatari;
     }
     log() {
-        console.log("Titolo: " + this.titolo + "\nLink: " + this.link);
+        console.log("Titolo: " + this.titolo + "\nData di pubblicazione: " + this.data
+            + "\nDestinatari: " + this.destinatari + "\nLink: " + this.link);
     }
 }
 
@@ -28,9 +38,16 @@ async function getCircolare() {
 
     // Conversione in DOM e recupero dati
     let dom = new jsdom.JSDOM(html);
-    let a = dom.window.document.querySelector(".views-field.views-field-title")
-        .children[0].children[0];
-    return new Circolare(a.textContent, a.href);
+    let divBlocco = dom.window.document
+        .querySelector(".views-row.views-row-1.views-row-odd.views-row-first");
+    let header = divBlocco.children[0].children[0].children[0];
+    let titolo = header.textContent;
+    let link = 'https://www.alessandrinimainardi.edu.it' + header.href;
+    let dataPubblicazione = divBlocco.children[2].children[1].textContent;
+    let destinatari = divBlocco.children[3].children[0].children[0].textContent
+        .replace(/\nA/g, ", a");
+
+    return new Circolare(titolo, link, dataPubblicazione, destinatari);
 }
 
 /**
