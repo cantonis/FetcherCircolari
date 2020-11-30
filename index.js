@@ -15,7 +15,7 @@ class Circolare {
      */
     constructor(titolo, link, dataPubblicazione, destinatari) {
         this.titolo = titolo;
-        this.link = link;
+        this.link = 'https://www.alessandrinimainardi.edu.it' + link;
         this.data = dataPubblicazione;
         this.destinatari = destinatari;
     }
@@ -42,7 +42,7 @@ async function getCircolare() {
         .querySelector(".views-row.views-row-1.views-row-odd.views-row-first");
     let header = divBlocco.children[0].children[0].children[0];
     let titolo = header.textContent;
-    let link = 'https://www.alessandrinimainardi.edu.it' + header.href;
+    let link = header.href;
     let dataPubblicazione = divBlocco.children[2].children[1].textContent;
     let destinatari = divBlocco.children[3].children[0].children[0].textContent
         .replace(/\nA/g, ", a");
