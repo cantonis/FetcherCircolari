@@ -12,17 +12,40 @@ class Circolare {
      * @param {string} link Il link che porta alla circolare
      * @param {string} dataPubblicazione La data di pubblicazione della circolare
      * @param {string} destinatari I destinatari della circolare
+     * @param {Array<string>} listaPDF La lista dei pdf inclusi nella circolare
      */
-    constructor(titolo, link, dataPubblicazione, destinatari) {
+    constructor(titolo, link, dataPubblicazione, destinatari, listaPDF) {
         this.titolo = titolo;
-        this.link = 'https://www.alessandrinimainardi.edu.it' + link;
+        this.link = link;
         this.data = dataPubblicazione;
         this.destinatari = destinatari;
+        this.listaPDF = listaPDF;
     }
     log() {
-        console.log("Titolo: " + this.titolo + "\nData di pubblicazione: " + this.data
-            + "\nDestinatari: " + this.destinatari + "\nLink: " + this.link);
+        let str = "Titolo: " + this.titolo;
+        str += "\nData di pubblicazione: " + this.data;
+        str += "\nDestinatari: " + this.destinatari;
+        str += "\nLink: " + this.link;
+
+        str += "\nDocumenti allegati: ";
+        this.listaPDF.forEach(pdf => {
+            str += pdf + "\n                    "
+        });
+
+        console.log(str);
     }
+}
+
+/**
+ * Questa funzione restituisce l'HTML della pagina web all'URL fornito
+ * @param {string} url L'url della pagina da fetchare
+ * @returns {string} L'HTML della pagina sotto forma di string
+ */
+async function getHTML(url) {
+    let response = await fetch(url);
+    let html = await response.text();
+
+    return html;
 }
 
 /**
@@ -31,23 +54,48 @@ class Circolare {
  * @returns {Circolare} La circolare più recente
  */
 async function getCircolare() {
-    // fetch dell'html delle circolari
-    let url = 'https://www.alessandrinimainardi.edu.it/categoria/circolari';
-    let response = await fetch(url);
-    let html = await response.text();
-
-    // Conversione in DOM e recupero dati
+    // Recupero l'HTML della pagina e lo converto in DOM
+    let html = await getHTML("https://www.alessandrinimainardi.edu.it/categoria/circolari");
     let dom = new jsdom.JSDOM(html);
+
+    // Recupero il blocco dell a pagina contente l'ultima circolare pubblicata
     let divBlocco = dom.window.document
         .querySelector(".views-row.views-row-1.views-row-odd.views-row-first");
+
+    // Recupero l'intestazione e da essa estrapolo il titolo e il link alla pagina della circolare
     let header = divBlocco.children[0].children[0].children[0];
     let titolo = header.textContent;
-    let link = header.href;
+    let link = 'https://www.alessandrinimainardi.edu.it' + header.href;
+
+    // Recupero la data di pubblicazione e i destinatari, formattando la stringa in modo che sia monolinea e corretta
     let dataPubblicazione = divBlocco.children[2].children[1].textContent;
     let destinatari = divBlocco.children[3].children[0].children[0].textContent
         .replace(/\n/g, ", ").replace(/ A/g, " a");
 
-    return new Circolare(titolo, link, dataPubblicazione, destinatari);
+    // Recupero i link dei PDF dalla pagina web della circolare
+    let listaPDF = await getPDFLinks(link);
+
+    return new Circolare(titolo, link, dataPubblicazione, destinatari, listaPDF);
+}
+
+/**
+ * Questa funzione recupera i link ai vari file PDF presenti nella pagina della circolare e li restituisce in un array di stringhe
+ * @param {string} url L'url dal quale estrapolare i link
+ * @returns {Array<string>} Array di stringhe contenente tutti i link
+ */
+async function getPDFLinks(url) {
+    let html = await getHTML(url);
+
+    let dom = new jsdom.JSDOM(html);
+    let elencoPDF = dom.window.document.querySelectorAll("span.file");
+    let listaLink = [];
+
+    elencoPDF.forEach(pdf => {
+        let link = pdf.children[1].href;
+        listaLink.push(link);
+    });
+
+    return listaLink;
 }
 
 /**
@@ -55,6 +103,8 @@ async function getCircolare() {
  * verificando se ne è presente una nuova con un infinte loop
  */
 async function run() {
+    console.log("In avvio...");
+
     let vecchia = await getCircolare();
     let nuova;
 
