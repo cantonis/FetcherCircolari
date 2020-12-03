@@ -59,8 +59,7 @@ async function getCircolare() {
     let dom = new jsdom.JSDOM(html);
 
     // Recupero il blocco dell a pagina contente l'ultima circolare pubblicata
-    let divBlocco = dom.window.document
-        .querySelector(".views-row.views-row-1.views-row-odd.views-row-first");
+    let divBlocco = dom.window.document.querySelector(".views-row-first");
 
     // Recupero l'intestazione e da essa estrapolo il titolo e il link alla pagina della circolare
     let header = divBlocco.children[0].children[0].children[0];
