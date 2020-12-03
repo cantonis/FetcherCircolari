@@ -64,6 +64,7 @@ async function getCircolare() {
     // Recupero l'intestazione e da essa estrapolo il titolo e il link alla pagina della circolare
     let header = divBlocco.children[0].children[0].children[0];
     let titolo = header.textContent;
+    // header.href restituisce un percorso relativo e non assoluto in funzione del dominio
     let link = 'https://www.alessandrinimainardi.edu.it' + header.href;
 
     // Recupero la data di pubblicazione e i destinatari, formattando la stringa in modo che sia monolinea e corretta
@@ -83,12 +84,15 @@ async function getCircolare() {
  * @returns {Array<string>} Array di stringhe contenente tutti i link
  */
 async function getPDFLinks(url) {
+    // Recupero l'HTML della pagina e lo converto in DOM
     let html = await getHTML(url);
-
     let dom = new jsdom.JSDOM(html);
+
+    // Recupero l'elenco dei PDF di cui estrapolare il link
     let elencoPDF = dom.window.document.querySelectorAll("span.file");
     let listaLink = [];
 
+    // Estrapolo il link di ogni PDF e lo inserisco in un array
     elencoPDF.forEach(pdf => {
         let link = pdf.children[1].href;
         listaLink.push(link);
