@@ -42,8 +42,16 @@ class Circolare {
  * @returns {string} L'HTML della pagina sotto forma di string
  */
 async function getHTML(url) {
-    let response = await fetch(url);
-    let html = await response.text();
+    let response, html;
+
+    do {
+        try {
+            response = await fetch(url);
+            html = await response.text();
+        } catch (error) {
+            console.log("Errore nel fetch, riprovo.");
+        }
+    } while (html == undefined);
 
     return html;
 }
