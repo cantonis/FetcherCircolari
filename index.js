@@ -128,7 +128,7 @@ async function run() {
     while (true) {
         nuova = await getCircolare();
         if (nuova.titolo != vecchia.titolo) {
-            console.log("=====================\nNuova circolare!\n=====================");
+            console.log("================\nNuova circolare!\n================");
             nuova.log();
             console.log();
             vecchia = nuova;
