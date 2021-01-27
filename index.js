@@ -49,7 +49,9 @@ async function getHTML(url) {
             response = await fetch(url);
             html = await response.text();
         } catch (error) {
-            console.log("Errore nel fetch, riprovo.");
+            let ora = new Date().toISOString();
+            ora = "[" + ora.substr(0, 10) + " " + ora.substr(11, 8) + "]";
+            console.log(ora + " Errore nel fetch, riprovo.");
         }
     } while (html == undefined);
 
