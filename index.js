@@ -7,6 +7,9 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 require("dotenv").config();
 
+// Uso il paradigma del cluster di processi per impedire l'interruzione dell'esecuzione
+const cluster = require('cluster');
+
 /**
  * Classe che rappresenta una circolare
  */
@@ -56,7 +59,7 @@ async function getHTML(url) {
         } catch (error) {
             let ora = new Date().toISOString();
             ora = "[" + ora.substr(0, 10) + " " + ora.substr(11, 8) + "]";
-            console.log(ora + " Errore nel fetch, riprovo.");
+            console.error(ora + " Errore nel fetch, riprovo.");
         }
     } while (html == undefined);
 
@@ -73,7 +76,7 @@ async function getCircolare() {
     let html = await getHTML("https://www.alessandrinimainardi.edu.it/categoria/circolari");
     let dom = new jsdom.JSDOM(html);
 
-    // Recupero il blocco dell a pagina contente l'ultima circolare pubblicata
+    // Recupero il blocco della pagina contente l'ultima circolare pubblicata
     let divBlocco = dom.window.document.querySelector(".views-row-first");
 
     // Recupero l'intestazione e da essa estrapolo il titolo e il link alla pagina della circolare
@@ -160,9 +163,25 @@ async function run() {
     }
 }
 
-client.once("ready", () => {
-    console.log("Bot pronto ad eseguire.\n");
-    run();
-})
+// Se il processo è il master
+if (cluster.isMaster) {
+    cluster.fork();
 
-client.login(process.env.DISCORD_TOKEN);
+    cluster.on('exit', function (worker, code, signal) {
+        let ora = new Date().toISOString();
+        ora = "[" + ora.substr(0, 10) + " " + ora.substr(11, 8) + "]";
+
+        console.error("\n" + ora + " Errore inaspettato. Riavvio processo... (forse il sito è in manutenzione?)" + "\n");
+        cluster.fork();
+    });
+}
+
+// Se il processo è il fork
+if (cluster.isWorker) {
+    client.once("ready", () => {
+        console.log("Bot pronto ad eseguire.\n");
+        run();
+    })
+
+    client.login(process.env.DISCORD_TOKEN);
+}
