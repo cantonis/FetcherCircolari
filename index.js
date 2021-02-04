@@ -2,6 +2,11 @@
 const jsdom = require("jsdom");
 const fetch = require("node-fetch");
 
+// import discord.js, config dotenv
+const Discord = require("discord.js");
+const client = new Discord.Client();
+require("dotenv").config();
+
 /**
  * Classe che rappresenta una circolare
  */
@@ -116,6 +121,7 @@ async function getPDFLinks(url) {
  * verificando se ne è presente una nuova con un infinte loop
  */
 async function run() {
+    const channel = client.channels.cache.filter(channel => channel.type === 'text').first();
     console.log("In avvio...");
 
     let vecchia = await getCircolare();
@@ -127,13 +133,36 @@ async function run() {
 
     while (true) {
         nuova = await getCircolare();
+
         if (nuova.titolo != vecchia.titolo) {
             console.log("================\nNuova circolare!\n================");
             nuova.log();
             console.log();
             vecchia = nuova;
+
+            // Discord embed message
+            let msg_embed = new Discord.MessageEmbed()
+                .setTitle(nuova.titolo)
+                .setURL(nuova.link)
+                .addFields(
+                    { name: "Data di pubblicazione", value: nuova.data },
+                    { name: "Destinatari", value: nuova.destinatari }
+                )
+                .setColor("#ff8c00");
+
+            // Allego tutti i pdf della circolare
+            nuova.listaPDF.forEach(pdf => {
+                msg_embed.attachFiles(new Discord.MessageAttachment(pdf));
+            });
+
+            channel.send(msg_embed);
         }
     }
 }
 
-run();
+client.once("ready", () => {
+    console.log("Bot pronto ad eseguire.\n");
+    run();
+})
+
+client.login(process.env.DISCORD_TOKEN);
