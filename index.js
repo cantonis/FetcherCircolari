@@ -124,7 +124,7 @@ async function getPDFLinks(url) {
  * verificando se ne è presente una nuova con un infinte loop
  */
 async function run() {
-    const channel = client.channels.cache.filter(channel => channel.type === 'text').first();
+    const channel = client.channels.cache.get(process.env.CHANNEL_ID);
     console.log("In avvio...");
 
     let vecchia = await getCircolare();
