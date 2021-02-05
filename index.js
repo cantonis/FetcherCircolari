@@ -57,9 +57,9 @@ async function getHTML(url) {
             response = await fetch(url);
             html = await response.text();
         } catch (error) {
-            let ora = new Date().toISOString();
-            ora = "[" + ora.substr(0, 10) + " " + ora.substr(11, 8) + "]";
-            console.error(ora + " Errore nel fetch, riprovo.");
+            let d = new Date();
+            d = "[" + d.toLocaleDateString() + " " + d.toLocaleTimeString() + "]";
+            console.error(d + " Errore nel fetch, riprovo.");
         }
     } while (html == undefined);
 
@@ -167,10 +167,10 @@ if (cluster.isMaster) {
     cluster.fork();
 
     cluster.on('exit', function (worker, code, signal) {
-        let ora = new Date().toISOString();
-        ora = "[" + ora.substr(0, 10) + " " + ora.substr(11, 8) + "]";
+        let d = new Date();
+        d = "[" + d.toLocaleDateString() + " " + d.toLocaleTimeString() + "]";
 
-        console.error("\n" + ora + " Errore inaspettato. Riavvio processo... (forse il sito è in manutenzione?)" + "\n");
+        console.error("\n" + d + " Errore inaspettato. Riavvio processo... (forse il sito è in manutenzione?)" + "\n");
         cluster.fork();
     });
 }
