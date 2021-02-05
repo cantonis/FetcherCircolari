@@ -154,11 +154,10 @@ async function run() {
                 .setColor("#ff8c00");
 
             // Allego tutti i pdf della circolare
-            nuova.listaPDF.forEach(pdf => {
-                msg_embed.attachFiles(new Discord.MessageAttachment(pdf));
-            });
+            channel.send(msg_embed).then(() =>
+                channel.send({ files: nuova.listaPDF })
+            );
 
-            channel.send(msg_embed);
         }
     }
 }
