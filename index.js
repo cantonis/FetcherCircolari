@@ -178,7 +178,8 @@ if (cluster.isMaster) {
 // Se il processo è il fork
 if (cluster.isWorker) {
     client.once("ready", () => {
-        console.log("Bot pronto ad eseguire.\n");
+        console.log("Bot pronto ad eseguire.");
+        console.log("ID canale : " + process.env.CHANNEL_ID);
         run();
     })
 
