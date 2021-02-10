@@ -125,7 +125,6 @@ async function getPDFLinks(url) {
  */
 async function run() {
     const channel = client.channels.cache.get(process.env.CHANNEL_ID);
-    console.log("In avvio...");
 
     let vecchia = await getCircolare();
     let nuova;
@@ -177,6 +176,7 @@ if (cluster.isMaster) {
 
 // Se il processo è il fork
 if (cluster.isWorker) {
+    console.log("In avvio...");
     client.once("ready", () => {
         console.log("Bot pronto ad eseguire.");
         console.log("ID canale : " + process.env.CHANNEL_ID);
