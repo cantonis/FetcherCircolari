@@ -178,7 +178,7 @@ async function run() {
 
 // Se il processo è il master
 if (cluster.isMaster) {
-    console.log("In avvio...");
+    console.log("In avvio...\n");
     cluster.fork();
     cluster.on('exit', function (worker, code, signal) {
         cluster.fork();
