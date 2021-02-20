@@ -9,6 +9,7 @@ require("dotenv").config();
 
 // Uso il paradigma del cluster di processi per impedire l'interruzione dell'esecuzione
 const cluster = require('cluster');
+const { exit } = require("process");
 
 /**
  * Classe che rappresenta una circolare
@@ -45,6 +46,17 @@ class Circolare {
 }
 
 /**
+ * Questa funzione restituisce una stringa contenente la data e l'ora attuale
+ * Esempio: "[2/20/2021 12:46:51 AM]"
+ * @returns {string} La data e l'ora attuale come stringa
+ */
+function getDate() {
+    let d = new Date();
+    d = "[" + d.toLocaleDateString() + " " + d.toLocaleTimeString() + "]";
+    return d;
+}
+
+/**
  * Questa funzione restituisce l'HTML della pagina web all'URL fornito
  * @param {string} url L'url della pagina da fetchare
  * @returns {string} L'HTML della pagina sotto forma di string
@@ -57,9 +69,7 @@ async function getHTML(url) {
             response = await fetch(url);
             html = await response.text();
         } catch (error) {
-            let d = new Date();
-            d = "[" + d.toLocaleDateString() + " " + d.toLocaleTimeString() + "]";
-            console.error(d + " Errore nel fetch, riprovo.");
+            console.error(getDate(), "HTML non recuperato.");
         }
     } while (html == undefined);
 
@@ -80,7 +90,12 @@ async function getCircolare() {
     let divBlocco = dom.window.document.querySelector(".views-row-first");
 
     // Recupero l'intestazione e da essa estrapolo il titolo e il link alla pagina della circolare
-    let header = divBlocco.children[0].children[0].children[0];
+    let header;
+    try {
+        header = divBlocco.children[0].children[0].children[0];
+    } catch (error) {
+        console.error(getDate(), "Errore nel recupero dei dati.");
+    }
     let titolo = header.textContent;
     // header.href restituisce un percorso relativo e non assoluto in funzione del dominio
     let link = 'https://www.alessandrinimainardi.edu.it' + header.href;
@@ -152,7 +167,7 @@ async function run() {
                 )
                 .setColor("#ff8c00");
 
-            // Allego tutti i pdf della circolare
+            // Invio il messaggio embed e un messaggio contenente tutti i pdf
             channel.send(msg_embed).then(() =>
                 channel.send({ files: nuova.listaPDF })
             );
@@ -163,23 +178,23 @@ async function run() {
 
 // Se il processo è il master
 if (cluster.isMaster) {
+    console.log("In avvio...");
     cluster.fork();
-
     cluster.on('exit', function (worker, code, signal) {
-        let d = new Date();
-        d = "[" + d.toLocaleDateString() + " " + d.toLocaleTimeString() + "]";
-
-        console.error("\n" + d + " Errore inaspettato. Riavvio processo... (forse il sito è in manutenzione?)" + "\n");
         cluster.fork();
     });
 }
 
 // Se il processo è il fork
 if (cluster.isWorker) {
-    console.log("In avvio...");
+    process.on("uncaughtException", error => {
+        console.error(getDate(), "Errore non gestito:\n\n", error.stack, "\n");
+        exit(1);
+    });
+
     client.once("ready", () => {
         console.log("Bot pronto ad eseguire.");
-        console.log("ID canale : " + process.env.CHANNEL_ID);
+        console.log("ID canale :", process.env.CHANNEL_ID);
         run();
     })
 
